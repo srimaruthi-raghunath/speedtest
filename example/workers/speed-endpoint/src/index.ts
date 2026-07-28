@@ -1,10 +1,26 @@
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "*",
+  "Cache-Control": "no-store",
+};
+
 export default {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
+    // Handle CORS preflight
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders,
+      });
+    }
+
     if (url.pathname === "/__ping") {
       return new Response("pong", {
         headers: {
+          ...corsHeaders,
           "Content-Type": "text/plain",
         },
       });
@@ -17,6 +33,7 @@ export default {
         }),
         {
           headers: {
+            ...corsHeaders,
             "Content-Type": "application/json",
           },
         }
@@ -35,24 +52,25 @@ export default {
 
       return new Response(data, {
         headers: {
+          ...corsHeaders,
           "Content-Type": "application/octet-stream",
-          "Cache-Control": "no-store",
         },
       });
     }
-
 
     if (url.pathname === "/__up") {
       await request.arrayBuffer();
 
       return new Response("OK", {
         headers: {
+          ...corsHeaders,
           "Content-Type": "text/plain",
         },
       });
     }
 
-
-    return new Response("Speed endpoint worker");
+    return new Response("Speed endpoint worker", {
+      headers: corsHeaders,
+    });
   },
 };
